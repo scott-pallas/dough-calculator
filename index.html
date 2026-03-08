@@ -293,6 +293,39 @@
       color: var(--muted);
       text-align: center;
     }
+
+    /* Sauce section */
+    .sauce-section {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .sauce-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent2);
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sauce-table { width: 100%; border-collapse: collapse; }
+    .sauce-table td {
+      font-size: 15px;
+      padding: 10px 20px;
+      border-top: 1px solid var(--border);
+      color: var(--text);
+    }
+    .sauce-table td:first-child { color: var(--text); }
+    .sauce-table td:last-child {
+      text-align: right;
+      font-weight: 600;
+      color: var(--accent2);
+    }
+    .sauce-table tr:hover td { background: rgba(255,255,255,0.02); }
+
   </style>
 </head>
 <body>
@@ -364,6 +397,19 @@
         <tr><th>Ingredient</th><th>Amount (g)</th></tr>
       </thead>
       <tbody id="ingredients">
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sauce-section">
+    <h3 class="sauce-title">🍅 Pizza Sauce Recipe</h3>
+    <table class="sauce-table">
+      <tbody>
+        <tr><td>Crushed Tomatoes</td><td>1 can (28 oz)</td></tr>
+        <tr><td>Salt</td><td>2 tsp</td></tr>
+        <tr><td>Oregano</td><td>2 tsp</td></tr>
+        <tr><td>Basil</td><td>3 tsp</td></tr>
+        <tr><td>Sugar</td><td>1 tsp</td></tr>
       </tbody>
     </table>
   </div>
