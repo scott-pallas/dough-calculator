@@ -369,7 +369,7 @@
   </div>
 
   <button class="instructions-toggle" id="instructions-btn">
-    Show Instructions <span class="arrow">▼</span>
+    <span id="instructions-label">Show Instructions</span><span class="arrow">▼</span>
   </button>
 
   <div class="instructions-box" id="instructions-box">
@@ -529,7 +529,7 @@
   btn.addEventListener('click', () => {
     const open = box.classList.toggle('visible')
     btn.classList.toggle('open', open)
-    btn.querySelector('span').textContent = open ? 'Hide Instructions' : 'Show Instructions'
+    document.getElementById('instructions-label').textContent = open ? 'Hide Instructions' : 'Show Instructions'
   })
 
   // Initial render
