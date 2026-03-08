@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍕 Pizza Dough Calculator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0f0f0f;
+      --surface:    #1a1a1a;
+      --surface2:   #242424;
+      --border:     #2e2e2e;
+      --text:       #f5f0e8;
+      --muted:      #888;
+      --accent:     #e85d04;
+      --accent2:    #f48c06;
+      --success:    #52b788;
+      --radius:     12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 80px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    header .emoji { font-size: 48px; display: block; margin-bottom: 12px; }
+    header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+    header p {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* Controls */
+    .controls { display: flex; flex-direction: column; gap: 24px; margin-bottom: 28px; }
+
+    .control-group label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+    .control-group label span {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: 3px solid var(--bg);
+      box-shadow: 0 0 0 1px var(--accent);
+      transition: transform 0.1s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: 3px solid var(--bg);
+    }
+
+    .select-row { display: flex; gap: 10px; }
+
+    select, .toggle-group {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 500;
+      padding: 10px 14px;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    select:focus { border-color: var(--accent); }
+    select option { background: var(--surface); }
+
+    /* GF Toggle */
+    .toggle-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
+      cursor: pointer;
+      padding: 10px 14px;
+    }
+    .toggle-group input[type="checkbox"] { display: none; }
+    .toggle-pill {
+      width: 40px;
+      height: 22px;
+      border-radius: 11px;
+      background: var(--border);
+      position: relative;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle-pill::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--muted);
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .toggle-group input:checked + .toggle-pill { background: var(--accent); }
+    .toggle-group input:checked + .toggle-pill::after {
+      transform: translateX(18px);
+      background: #fff;
+    }
+
+    /* Results */
+    .results {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .results-summary {
+      padding: 16px 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .summary-item { }
+    .summary-item .key {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .summary-item .val {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .summary-item .val.accent { color: var(--accent2); }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: var(--surface); }
+    th {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      padding: 10px 20px;
+      text-align: left;
+    }
+    th:last-child { text-align: right; }
+    td {
+      font-size: 15px;
+      padding: 11px 20px;
+      border-top: 1px solid var(--border);
+      color: var(--text);
+    }
+    td:last-child {
+      text-align: right;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--accent2);
+    }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    /* Instructions */
+    .instructions-toggle {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: border-color 0.15s, color 0.15s;
+      margin-bottom: 16px;
+    }
+    .instructions-toggle:hover { border-color: var(--accent); color: var(--text); }
+    .instructions-toggle .arrow { transition: transform 0.2s; display: inline-block; }
+    .instructions-toggle.open .arrow { transform: rotate(180deg); }
+
+    .instructions-box {
+      display: none;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .instructions-box.visible { display: block; }
+    .instructions-box h3 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent2);
+      margin-bottom: 16px;
+    }
+    .instructions-box ol {
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .instructions-box li {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    .instructions-box li strong { color: var(--accent2); }
+    .step-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 16px 0;
+    }
+    .tip {
+      font-size: 13px;
+      color: var(--muted);
+      font-style: italic;
+      margin-top: 14px;
+      line-height: 1.5;
+    }
+
+    footer {
+      margin-top: 28px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <header>
+    <span class="emoji">🍕</span>
+    <h1>Pizza Dough Calculator</h1>
+    <p>Exact gram weights for any size, quantity, or style</p>
+  </header>
+
+  <div class="controls">
+    <!-- Pizza Size -->
+    <div class="control-group">
+      <label>
+        Pizza Size
+        <span><span id="size-val">16</span>"</span>
+      </label>
+      <input type="range" id="size" min="8" max="20" step="1" value="16" />
+    </div>
+
+    <!-- Number of Pizzas -->
+    <div class="control-group">
+      <label>
+        Number of Pizzas
+        <span id="count-val">6</span>
+      </label>
+      <input type="range" id="count" min="1" max="20" step="1" value="6" />
+    </div>
+
+    <!-- Thickness + GF -->
+    <div class="select-row">
+      <select id="thickness">
+        <option value="thin">Thin</option>
+        <option value="regular" selected>Regular</option>
+        <option value="thick">Thick</option>
+      </select>
+
+      <label class="toggle-group" for="gf-toggle">
+        <input type="checkbox" id="gf-toggle" />
+        <div class="toggle-pill"></div>
+        Gluten Free
+      </label>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results">
+    <div class="results-summary">
+      <div class="summary-item">
+        <div class="key">Pizza Size</div>
+        <div class="val" id="out-size">16"</div>
+      </div>
+      <div class="summary-item">
+        <div class="key">Quantity</div>
+        <div class="val" id="out-count">6 pizzas</div>
+      </div>
+      <div class="summary-item">
+        <div class="key">Style</div>
+        <div class="val" id="out-style">Regular</div>
+      </div>
+      <div class="summary-item">
+        <div class="key">Dough Ball</div>
+        <div class="val accent" id="out-ball">480 g</div>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Ingredient</th><th>Amount (g)</th></tr>
+      </thead>
+      <tbody id="ingredients">
+      </tbody>
+    </table>
+  </div>
+
+  <button class="instructions-toggle" id="instructions-btn">
+    Show Instructions <span class="arrow">▼</span>
+  </button>
+
+  <div class="instructions-box" id="instructions-box">
+    <h3>Method</h3>
+    <ol id="instructions-list"></ol>
+    <hr class="step-divider" />
+    <p class="tip" id="instructions-tip"></p>
+  </div>
+</div>
+
+<footer>Inspired by Dough Guy™ · calculations based on baker's percentages</footer>
+
+<script>
+  // ─── Formulas (reverse-engineered from Dough Guy) ───────────────────────────
+
+  // Grams of total dough per sq inch by thickness (produces exact ball weights)
+  const G_PER_SQIN = {
+    thin:    2.034,   // → 409 g for 16"
+    regular: 2.387,   // → 480 g for 16"
+    thick:   3.113,   // → 626 g for 16"
+  }
+  // GF is 17.1% heavier per sq inch (562 g vs 480 g for 16" regular)
+  const GF_MULTIPLIER = 1.171
+
+  // Flour = (ball × count) × FLOUR_RATIO — calibrated from known values
+  const FLOUR_RATIO = 0.5922
+
+  // Baker's percentages (relative to flour = 100%)
+  const RATIOS = {
+    regular: { water: 0.62,  yeast: 0.004, salt: 0.025, sugar: 0.02, oil: 0.033 },
+    gf:      { water: 0.80,  yeast: 0.004, salt: 0.025, sugar: 0.02, oil: 0.033 },
+  }
+
+  const INSTRUCTIONS = {
+    regular: {
+      steps: [
+        '<strong>Combine dry ingredients:</strong> Whisk bread flour, yeast, salt, and sugar together in a large bowl.',
+        '<strong>Add water:</strong> Pour in lukewarm water (75–80°F / 24–27°C) and mix until a shaggy dough forms.',
+        '<strong>Add olive oil:</strong> Drizzle in the oil and continue mixing until incorporated.',
+        '<strong>Knead:</strong> Turn out onto a lightly floured surface and knead for 8–10 minutes until smooth and elastic, or use a stand mixer with the dough hook on medium for 6–8 minutes.',
+        '<strong>First rise:</strong> Shape into a ball, place in a lightly oiled bowl, cover with plastic wrap, and rest at room temperature for 1–2 hours until doubled in size.',
+        '<strong>Portion:</strong> Punch down and divide into equal portions (one per pizza). Shape each into a tight ball.',
+        '<strong>Cold ferment:</strong> Place dough balls in oiled containers, cover, and refrigerate for 24–72 hours for best flavor. Remove 1 hour before use.',
+        '<strong>Shape &amp; top:</strong> Stretch or roll to desired size on a floured surface. Top and bake at the highest oven temperature your oven allows (500–550°F / 260–290°C), preferably on a preheated steel or stone.',
+      ],
+      tip: '💡 Tip: Longer cold fermentation develops more complex flavor. The 48-hour dough will outperform the 24-hour every time.'
+    },
+    gf: {
+      steps: [
+        '<strong>Combine dry ingredients:</strong> Whisk gluten-free flour blend, yeast, salt, and sugar in a large bowl.',
+        '<strong>Add water &amp; oil:</strong> GF dough is wetter — add the full water amount and olive oil, then mix well. It will look more like a thick batter than a dough.',
+        '<strong>Mix thoroughly:</strong> Beat with a wooden spoon or stand mixer for 3–4 minutes. No kneading required — there\'s no gluten to develop.',
+        '<strong>First rise:</strong> Cover and let rest at room temperature for 1–1.5 hours until puffed.',
+        '<strong>Portion:</strong> The dough will be sticky. Use wet hands or a well-oiled scoop to portion onto oiled parchment paper.',
+        '<strong>Shape:</strong> Pat and press into a round using damp hands or the back of an oiled spoon. GF dough doesn\'t stretch like regular — work gently.',
+        '<strong>Par-bake (optional):</strong> For a crispier base, bake the bare dough at 425°F / 220°C for 5–7 minutes before adding toppings.',
+        '<strong>Top &amp; bake:</strong> Add sauce, cheese, and toppings. Bake at 450°F / 230°C for 12–15 minutes until golden.',
+      ],
+      tip: '💡 GF tip: Bake on parchment paper — GF dough sticks much more than regular. Letting it cool slightly before slicing also helps it hold together.'
+    },
+  }
+
+  // ─── State ───────────────────────────────────────────────────────────────────
+
+  let size      = 16
+  let count     = 6
+  let thickness = 'regular'
+  let glutenFree = false
+
+  // ─── Calculation ─────────────────────────────────────────────────────────────
+
+  function round(n, decimals = 0) {
+    const factor = Math.pow(10, decimals)
+    return Math.round(n * factor) / factor
+  }
+
+  function calculate() {
+    const radius     = size / 2
+    const area       = Math.PI * radius * radius
+    const gPerIn     = G_PER_SQIN[thickness] * (glutenFree ? GF_MULTIPLIER : 1)
+    const ballWeight = round(gPerIn * area)          // target ball (exact)
+    const totalDough = ballWeight * count
+
+    const ratios = glutenFree ? RATIOS.gf : RATIOS.regular
+    const flour  = round(totalDough * FLOUR_RATIO)   // calibrated to match reality
+
+    return {
+      ballWeight,
+      flour,
+      water: round(flour * ratios.water),
+      yeast: round(flour * ratios.yeast, 1),
+      salt:  round(flour * ratios.salt),
+      sugar: round(flour * ratios.sugar),
+      oil:   round(flour * ratios.oil),
+    }
+  }
+
+  // ─── Render ──────────────────────────────────────────────────────────────────
+
+  function styleName() {
+    const t = thickness.charAt(0).toUpperCase() + thickness.slice(1)
+    return glutenFree ? `GF ${t}` : t
+  }
+
+  function render() {
+    const d = calculate()
+    const flourLabel = glutenFree ? 'Gluten-Free Flour' : 'Bread Flour'
+
+    // Summary
+    document.getElementById('size-val').textContent  = size
+    document.getElementById('count-val').textContent = count
+    document.getElementById('out-size').textContent  = `${size}"`
+    document.getElementById('out-count').textContent = `${count} pizza${count !== 1 ? 's' : ''}`
+    document.getElementById('out-style').textContent = styleName()
+    document.getElementById('out-ball').textContent  = `${d.ballWeight} g`
+
+    // Ingredient table
+    const tbody = document.getElementById('ingredients')
+    tbody.innerHTML = [
+      [flourLabel,  d.flour],
+      ['Water',     d.water],
+      ['Yeast',     d.yeast],
+      ['Salt',      d.salt],
+      ['Sugar',     d.sugar],
+      ['Olive Oil', d.oil],
+    ].map(([name, amt]) => `<tr><td>${name}</td><td>${amt}</td></tr>`).join('')
+
+    // Instructions
+    const inst = glutenFree ? INSTRUCTIONS.gf : INSTRUCTIONS.regular
+    const list = document.getElementById('instructions-list')
+    list.innerHTML = inst.steps.map(s => `<li>${s}</li>`).join('')
+    document.getElementById('instructions-tip').textContent = inst.tip.replace('💡 ', '')
+    document.getElementById('instructions-tip').innerHTML = `💡 ${inst.tip.replace('💡 ', '')}`
+  }
+
+  // ─── Event listeners ─────────────────────────────────────────────────────────
+
+  document.getElementById('size').addEventListener('input', e => {
+    size = parseInt(e.target.value)
+    render()
+  })
+  document.getElementById('count').addEventListener('input', e => {
+    count = parseInt(e.target.value)
+    render()
+  })
+  document.getElementById('thickness').addEventListener('change', e => {
+    thickness = e.target.value
+    render()
+  })
+  document.getElementById('gf-toggle').addEventListener('change', e => {
+    glutenFree = e.target.checked
+    render()
+  })
+
+  const btn = document.getElementById('instructions-btn')
+  const box = document.getElementById('instructions-box')
+  btn.addEventListener('click', () => {
+    const open = box.classList.toggle('visible')
+    btn.classList.toggle('open', open)
+    btn.querySelector('span').textContent = open ? 'Hide Instructions' : 'Show Instructions'
+  })
+
+  // Initial render
+  render()
+</script>
+</body>
+</html>
